@@ -1,9 +1,11 @@
 # Ver 2.0 下载指定科目、年级的课本
 # Ver 2.1 支持下载指定科目的 '全部' 课本，注意英语需要指定关键字：--keywords=PEP 三年级起点
 # Ver 2.2 加入对操作系统的判断，以决定使用 Chrome 浏览器还是 Edge 浏览器
+# Ver 2.3 更改了对操作系统的判断，直接判断是否安装了 msedge 或 chrome 浏览器
 import os
 import requests
 import argparse
+import subprocess
 from tqdm import tqdm
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.pdfgen import canvas
@@ -12,10 +14,24 @@ from reportlab.lib.utils import ImageReader
 # 引入 playWright 包
 from playwright.sync_api import sync_playwright
 
-Version = "2.2"
-#_Debug_ = True
+Version = "2.3"
+# _Debug_ = True #调试模式并不真正下载和创建文件
 _Debug_ = False
 
+# 检查系统是否安装特定的浏览器如 "msedge" 或 "chrome"
+def check_browser(browser_name):
+    try:
+        result = subprocess.run(["where", browser_name], capture_output=True, text=True)
+        if result.returncode == 0:
+            browser_path = result.stdout.strip()
+            return True, browser_path
+        else:
+            return False, None
+    except Exception as e:
+        print(f"Error: {e}")
+        return False, None
+
+# 通过文本内容点击元素
 def click_element_by_text(page, text):
     page.evaluate(
         """(text) => {
@@ -29,25 +45,34 @@ def click_element_by_text(page, text):
     }""",
         text,
     )
-    
+
+# 从人教网站查询指定科目、年级的课本
 def QueryCatalogPage(major="语文", grade="六年级", school="小学", keywords=""):
     base_url = "http://jc.pep.com.cn/"
 
-    #尽量使用系统自带的浏览器
-    #ChromeExecutePath = r"chrome-win\chrome.exe" 
+    # 尽量使用系统自带的浏览器
+    # ChromeExecutePath = r"chrome-win\chrome.exe"
     ##下载简化版 Chrome https://playwright.azureedge.net/builds/chromium/1060/chromium-win64.zip
 
-    channel='chrome' #如果安装了 Chrome 浏览器，可以使用 Chrome 浏览器
-    #判断当前操作系统
-    if os.name == "nt":
+    # 判断当前操作系统
+    # channel = 'chrome' #如果安装了 Chrome 浏览器，可以使用 Chrome 浏览器
+    # if os.name == "nt":
+    #    channel = "msedge"
+
+    # 检查系统是否安装微软 Edge 浏览器
+    is_edge_installed, edge_path = check_browser("msedge")
+    is_chrome_installed, chrome_path = check_browser("chrome")
+    if is_edge_installed:
         channel = "msedge"
+    elif is_chrome_installed:
+        channel = "chrome"
 
     # 用 playWright 读取电子教材目录页
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
-            headless= not _Debug_,
-            channel = channel,   #如果是 Windows 10 以上操作系统，使用微软浏览器
-            #executable_path=ChromeExecutePath, # 否则可以指定 Chrome 浏览器的路径
+            headless=not _Debug_,
+            channel=channel,  # 如果是 Windows 10 以上操作系统，使用微软浏览器
+            # executable_path=ChromeExecutePath, # 否则可以指定 Chrome 浏览器的路径
         )
         context = browser.new_context()
         page = context.new_page()
@@ -141,7 +166,7 @@ def downloadBookImages(bookId, bookName):
     os.makedirs(folder_name, exist_ok=True)
 
     # 遍历图片编号
-    total = 201
+    total = 251
     print(f"| 开始下载教材高清图片：《{bookName}》\t{bookId}\t{bookUrl}")
     for i in tqdm(
         range(1, total),
@@ -209,7 +234,7 @@ else:
         major=major, grade=grade, school=school, keywords=keywords
     )
 
-#for book in bookList:
+# for book in bookList:
 #    print(book)
 
 i = 0
@@ -221,5 +246,5 @@ for book in bookList:
     i += 1
     print(f"\r\n☆ {i}/{total} ☆ 下载教材：《{bookName}》\t{bookId}")
     if not _Debug_:  # 调试时不进行操作
-        downloadBookImages(bookId, bookName)    #下载图片
-        merge_images_to_pdf(bookName)           # 合并为 PDF 文件
+        downloadBookImages(bookId, bookName)  # 下载图片
+        merge_images_to_pdf(bookName)  # 合并为 PDF 文件
