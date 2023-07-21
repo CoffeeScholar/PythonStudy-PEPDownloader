@@ -106,7 +106,7 @@ def QueryCatalogPage(major="语文", grade="六年级", school="小学", keyword
     # 返回课本列表
     return results
 
-
+# 将图片合并为 PDF 文件
 def merge_images_to_pdf(bookName):
     # 获取目录名作为 PDF 文件名
     pdf_file = f"{bookName}.pdf"
@@ -157,7 +157,7 @@ def merge_images_to_pdf(bookName):
 
     print(f"| 教材 PDF 合并完毕：{pdf_file}\r\n")
 
-
+# 下载指定课本的图片
 def downloadBookImages(bookId, bookName):
     folder_name = bookName
     bookUrl = f"https://book.pep.com.cn/{bookId}/files/mobile/"
@@ -189,7 +189,7 @@ def downloadBookImages(bookId, bookName):
 
     print(f"| 下载完成，共 {i - 1} 页。\r\n")
 
-
+# 主程序：获取命令行参数
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=f"人教版教材电子版下载工具 V{Version}")
     parser.add_argument("major", help="学科，如 语文、数学、英语")
@@ -198,7 +198,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--keywords", nargs="?", help='标题必须包含关键字，如 "上册"、"三年级起点"，多个关键字之间用空格分隔'
     )
-
     args = parser.parse_args()
 
 major = args.major
@@ -209,6 +208,7 @@ if args.keywords:
 else:
     keywords = ""
 
+# 查询指定科目、年级的课本
 bookList = []
 if grade == "全部":
     if school == "小学":
@@ -237,6 +237,7 @@ else:
 # for book in bookList:
 #    print(book)
 
+# 分别下载每一本课本图片，并合并为 PDF 文件
 i = 0
 total = bookList.__len__()
 for book in bookList:
