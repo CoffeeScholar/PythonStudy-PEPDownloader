@@ -1,5 +1,6 @@
 # Ver 2.0 下载指定科目、年级的课本
 # Ver 2.1 支持下载指定科目的 '全部' 课本，注意英语需要指定关键字：--keywords=PEP 三年级起点
+# Ver 2.2 加入对操作系统的判断，以决定使用 Chrome 浏览器还是 Edge 浏览器
 import os
 import requests
 import argparse
@@ -10,9 +11,8 @@ from reportlab.lib.utils import ImageReader
 
 # 引入 playWright 包
 from playwright.sync_api import sync_playwright
-ChromeExecutePath = r"chrome-win\chrome.exe"
 
-Version = "2.1"
+Version = "2.2"
 #_Debug_ = True
 _Debug_ = False
 
@@ -29,15 +29,25 @@ def click_element_by_text(page, text):
     }""",
         text,
     )
-
-
+    
 def QueryCatalogPage(major="语文", grade="六年级", school="小学", keywords=""):
     base_url = "http://jc.pep.com.cn/"
+
+    #尽量使用系统自带的浏览器
+    #ChromeExecutePath = r"chrome-win\chrome.exe" 
+    ##下载简化版 Chrome https://playwright.azureedge.net/builds/chromium/1060/chromium-win64.zip
+
+    channel='chrome' #如果安装了 Chrome 浏览器，可以使用 Chrome 浏览器
+    #判断当前操作系统
+    if os.name == "nt":
+        channel = "msedge"
+
     # 用 playWright 读取电子教材目录页
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             headless= not _Debug_,
-            executable_path=ChromeExecutePath,
+            channel = channel,   #如果是 Windows 10 以上操作系统，使用微软浏览器
+            #executable_path=ChromeExecutePath, # 否则可以指定 Chrome 浏览器的路径
         )
         context = browser.new_context()
         page = context.new_page()
