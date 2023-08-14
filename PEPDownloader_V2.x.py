@@ -2,6 +2,7 @@
 # Ver 2.1 支持下载指定科目的 '全部' 课本，注意英语需要指定关键字：--keywords=PEP 三年级起点
 # Ver 2.2 加入对操作系统的判断，以决定使用 Chrome 浏览器还是 Edge 浏览器
 # Ver 2.3 更改了对操作系统的判断，直接判断是否安装了 msedge 或 chrome 浏览器
+# Ver 2.31 之前不小心注释了默认浏览器。TODO: 未能正常工作：subprocess.run(["where", browser_name], capture_output=True, text=True) 
 import os
 import requests
 import argparse
@@ -27,6 +28,12 @@ def check_browser(browser_name):
             return True, browser_path
         else:
             return False, None
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Command execution failed with return code {e.returncode}")
+        return False, None
+    except FileNotFoundError:
+        print("Error: 'where' command not found")
+        return False, None
     except Exception as e:
         print(f"Error: {e}")
         return False, None
@@ -55,9 +62,9 @@ def QueryCatalogPage(major="语文", grade="六年级", school="小学", keyword
     ##下载简化版 Chrome https://playwright.azureedge.net/builds/chromium/1060/chromium-win64.zip
 
     # 判断当前操作系统
-    # channel = 'chrome' #如果安装了 Chrome 浏览器，可以使用 Chrome 浏览器
-    # if os.name == "nt":
-    #    channel = "msedge"
+    channel = 'chrome' #如果安装了 Chrome 浏览器，可以使用 Chrome 浏览器
+    if os.name == "nt":
+        channel = "msedge"
 
     # 检查系统是否安装微软 Edge 浏览器
     is_edge_installed, edge_path = check_browser("msedge")
