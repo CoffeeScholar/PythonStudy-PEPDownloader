@@ -1,28 +1,35 @@
 {
   "version": "0.2.0",
   "configurations": [
-
     {
       "name": "Python: Debug",
       "type": "python",
       "request": "launch",
+      "cwd": "${fileDirname}",
       "program": "${file}",
       "args": [
         "数学",
         "全部",
-        "高中",
-        //"--keywords=PEP 三年级起点"
+        "高中"
       ]
     },
     {
       "name": "Python: Debug",
       "type": "python",
       "request": "launch",
+      "cwd": "${fileDirname}",
       "program": "${file}",
       "args": [
         "https://book.pep.com.cn/1221001601141/",
         "人教版小学数学六年级-上"
       ]
+    },
+    {
+      "name": "Python: File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "justMyCode": true
     }
   ]
 }
