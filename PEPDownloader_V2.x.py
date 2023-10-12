@@ -2,7 +2,7 @@
 # Ver 2.1 支持下载指定科目的 '全部' 课本，注意英语需要指定关键字：--keywords=PEP 三年级起点
 # Ver 2.2 加入对操作系统的判断，以决定使用 Chrome 浏览器还是 Edge 浏览器
 # Ver 2.3 更改了对操作系统的判断，直接判断是否安装了 msedge 或 chrome 浏览器
-# Ver 2.31 之前不小心注释了默认浏览器。TODO: 未能正常工作：subprocess.run(["where", browser_name], capture_output=True, text=True) 
+# Ver 2.31 之前不小心注释了默认浏览器。TODO: 未能正常工作：subprocess.run(["where", browser_name], capture_output=True, text=True)
 import os
 import requests
 import argparse
@@ -18,6 +18,7 @@ from playwright.sync_api import sync_playwright
 Version = "2.3"
 # _Debug_ = True #调试模式并不真正下载和创建文件
 _Debug_ = False
+
 
 # 检查系统是否安装特定的浏览器如 "msedge" 或 "chrome"
 def check_browser(browser_name):
@@ -38,6 +39,7 @@ def check_browser(browser_name):
         print(f"Error: {e}")
         return False, None
 
+
 # 通过文本内容点击元素
 def click_element_by_text(page, text):
     page.evaluate(
@@ -53,6 +55,7 @@ def click_element_by_text(page, text):
         text,
     )
 
+
 # 从人教网站查询指定科目、年级的课本
 def QueryCatalogPage(major="语文", grade="六年级", school="小学", keywords=""):
     base_url = "http://jc.pep.com.cn/"
@@ -62,7 +65,7 @@ def QueryCatalogPage(major="语文", grade="六年级", school="小学", keyword
     ##下载简化版 Chrome https://playwright.azureedge.net/builds/chromium/1060/chromium-win64.zip
 
     # 判断当前操作系统
-    channel = 'chrome' #如果安装了 Chrome 浏览器，可以使用 Chrome 浏览器
+    channel = "chrome"  # 如果安装了 Chrome 浏览器，可以使用 Chrome 浏览器
     if os.name == "nt":
         channel = "msedge"
 
@@ -112,6 +115,7 @@ def QueryCatalogPage(major="语文", grade="六年级", school="小学", keyword
 
     # 返回课本列表
     return results
+
 
 # 将图片合并为 PDF 文件
 def merge_images_to_pdf(bookName):
@@ -164,6 +168,7 @@ def merge_images_to_pdf(bookName):
 
     print(f"| 教材 PDF 合并完毕：{pdf_file}\r\n")
 
+
 # 下载指定课本的图片
 def downloadBookImages(bookId, bookName):
     folder_name = bookName
@@ -195,6 +200,7 @@ def downloadBookImages(bookId, bookName):
             file.write(response.content)
 
     print(f"| 下载完成，共 {i - 1} 页。\r\n")
+
 
 # 主程序：获取命令行参数
 if __name__ == "__main__":
